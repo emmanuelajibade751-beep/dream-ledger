@@ -8,6 +8,18 @@ The webpage version of the Dream Ledger visuals — interactive, animated, and e
 simulator. Stack decision: **D3.js for the 2D charts** (this phase), **three.js for the block-world /
 population / city layers** (later phases). Static server, no build step. Fonts: Space Grotesk + Inter.
 
+## Live site
+**https://emmanuelajibade751-beep.github.io/dream-ledger/** — public GitHub Pages, serving the
+`gh-pages` branch of `emmanuelajibade751-beep/dream-ledger` (app files only; the research repo
+stays local/private). Redeploy after changes:
+```
+cd Money_Lens
+git add -A && git commit -m "..."
+git branch -D deploy 2>/dev/null; git subtree split --prefix=06_Interactive_App -b deploy
+git push app deploy:gh-pages --force
+```
+(`app` remote = https://github.com/emmanuelajibade751-beep/dream-ledger.git)
+
 ## Run it
 ```
 cd 06_Interactive_App
