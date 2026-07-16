@@ -142,6 +142,7 @@
   };
 
   const FIELDS = ["income", "essential", "coping", "leak", "dreamSpend", "dreamCost"];
+  window.ML_EVENTS = EVENTS;   // shared with the Phase-4 population engine
   const sim = { active: new Set(), when: 3, metric: "progress" };
 
   /* ================= engine ================= */

@@ -151,6 +151,61 @@
     </aside>
   </section>
 
+  <!-- Phase 4 — the population -->
+  <section class="stage">
+    <div class="chart-card">
+      <div class="chart-head">
+        <h2>The city — 1,000 dreams at once</h2>
+        <p>Every block is a household, sampled around the seven lives (mostly copers and
+        “make-it” dreamers — a handful earn in dollars). Blocks <strong>grow as dreams build</strong>.
+        Press play, then hit the city with a shock and watch who keeps growing.</p>
+      </div>
+
+      <div class="pop-controls">
+        <button class="pop-play" id="popPlay" aria-label="Play or pause">▶ Play</button>
+        <input type="range" id="popScrub" min="0" max="83" step="1" value="0"
+               aria-label="Month scrubber">
+        <span class="pop-month" id="popMonth">Month 0</span>
+      </div>
+
+      <div class="sim-controls pop-sim-controls">
+        <div class="sim-group">
+          <h4>Shocks</h4>
+          <div class="sim-btns" id="popShockBtns"></div>
+        </div>
+        <div class="sim-group">
+          <h4>Stabilizers</h4>
+          <div class="sim-btns" id="popStabBtns"></div>
+        </div>
+        <div class="sim-group sim-when">
+          <h4>Hits in year <span id="popWhenLabel">3</span></h4>
+          <input type="range" id="popWhenSlider" min="1" max="5" step="1" value="3"
+                 aria-label="Year the events hit the city">
+          <button class="clear-btn" id="popReset">Reset</button>
+        </div>
+      </div>
+
+      <div class="pop-canvas" id="popCanvas"></div>
+      <div class="pop-tip" id="popTip" hidden></div>
+
+      <div class="pop-counts" id="popCounts"></div>
+      <div class="pop-legend" id="popLegend"></div>
+    </div>
+
+    <aside class="reading">
+      <h3>How to read this</h3>
+      <p>Block height = naira actually built into the dream, on one city-wide scale (the
+      Landlord's finished house ≈ full height — so AMA's ₦700k hustle stays low and the ₦66m
+      degree towers). Colour is what this month is doing: <em>green</em> = building,
+      <em>gold</em> = arrived (the dream completed), <em>red</em> = leaking more than building,
+      <em>grey</em> = just surviving, <em>dark</em> = the dream has died (paused so long it never
+      restarts). The flat district on the far left is the Control — households with no dream;
+      shocks can only push them deeper. Drag to orbit, scroll to zoom, hover a block for its story.</p>
+      <p class="fineprint">⚠ The 1,000 households are procedural variations of the seven synthetic
+      ledgers — an illustration of differing exposure, not a demographic model of Lagos.</p>
+    </aside>
+  </section>
+
   <!-- Phase 2b — the Menzel artifact boards -->
   <section class="stage">
     <div class="chart-card">
@@ -185,5 +240,14 @@
 <script src="js/heatmap.js"></script>
 <script src="js/artifacts.js"></script>
 <script src="js/simulator.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="js/population.js"></script>
 </body>
 </html>

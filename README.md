@@ -85,7 +85,19 @@ py -3 -m http.server 4173 --directory .        # then open http://localhost:4173
        that shocks are measured against — "let the ones without a dream die."
     2. **Dollar-earner** — remote worker/freelancer earning USD from Lagos. The one archetype for
        whom currency collapse is a STABILIZER (naira income quadruples). Makes shocks two-sided.
-- **Phase 4 — population of 1,000** (three.js instanced cubes, shock button, survival field).
+- **Phase 4 — population of 1,000: DONE (2026-07-17).** `js/population.js` (ES module;
+  three.js r160 via importmap CDN + OrbitControls). 1,000 deterministic procedural households
+  sampled around the seven archetypes (mix: 350 control / 250 AMA / 120 landlord / 120 japa /
+  80 insta / 60 kids / 20 dollar — "for every winner…"). Same shock engine (`ML_EVENTS` shared
+  from simulator.js) + per-agent jitter (earnings 0.7–1.4×, ambition, discipline 0.4–1.9×).
+  InstancedMesh block-city in 7 districts: height = ABSOLUTE naira built (city scale,
+  Landlord's house ≈ 1.0), colour = month status (green build / gold arrived / red leak /
+  grey survive / dark dead / deep-red drowning). Play/scrub timeline, own shock chips +
+  hit-year, live counts, hover tooltips (raycast), persona-tinted floor plates.
+  Design decisions: gold "arrived" only for archetypes that can complete by spending
+  (landlord/japa/kids/dollar — AMA and Insta cannot); dream death = 15 consecutive paused
+  months, sticky. Verified: baseline ends 163 completed / 7 dead / 146 drowning; currency
+  collapse → 20 completed / 28 dead / 252 drowning, and the Dollar district completes EARLY.
 - **Phase 5 — the city** (spatial; deck.gl candidate; community loans, collective structures).
 
 ## Honesty rules carried over from Synthesis

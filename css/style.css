@@ -453,6 +453,96 @@ main { max-width: 1060px; margin: 0 auto; padding: 34px 24px 80px; }
 .sim-note b { color: var(--ink); font-weight: 600; }
 .sim-note .sn-event { color: var(--ink-muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
 
+/* ---------- population (Phase 4) ---------- */
+.pop-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0 8px;
+}
+.pop-play {
+  appearance: none;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--page);
+  background: var(--dream-green);
+  border: 0;
+  border-radius: 99px;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  flex: 0 0 auto;
+}
+.pop-play:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.pop-controls input[type="range"] { flex: 1; accent-color: var(--dream-green); }
+.pop-month {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  min-width: 130px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.pop-sim-controls { margin-top: 4px; }
+.pop-canvas {
+  width: 100%;
+  height: 540px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: radial-gradient(900px 400px at 50% -10%, #16201a, #0b0b0a 70%);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: grab;
+}
+.pop-canvas:active { cursor: grabbing; }
+.pop-canvas canvas { display: block; }
+.pop-tip {
+  position: absolute;
+  pointer-events: none;
+  background: #232322;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 8px 11px;
+  box-shadow: 0 18px 42px -12px rgba(0, 0, 0, 0.65);
+  z-index: 40;
+  font-size: 12px;
+  color: var(--ink-2);
+  max-width: 240px;
+}
+.pop-tip b { color: var(--ink); font-family: var(--font-display); }
+.pop-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pop-stat {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 13px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.pop-stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--sc, var(--ink));
+  font-variant-numeric: tabular-nums;
+}
+.pop-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+.pop-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.pop-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
 /* ---------- body-level floating tooltip ---------- */
 .float-tip {
   position: fixed;
