@@ -155,14 +155,16 @@
   <section class="stage">
     <div class="chart-card">
       <div class="chart-head">
-        <h2>The city — 1,000 dreams at once</h2>
-        <p>Every block is a household, sampled around the seven lives (mostly copers and
-        “make-it” dreamers — a handful earn in dollars). Blocks <strong>grow as dreams build</strong>.
-        Press play, then hit the city with a shock and watch who keeps growing.</p>
+        <h2>Lagos, in timelapse — 1,000 dreams at once</h2>
+        <p>Every block is a household, placed in its real neighborhood — Mushin's copers,
+        Agege's “make-it” dreamers, Ikorodu's builders, Lekki's performers, a few dollar
+        earners in Surulere. Blocks <strong>grow as dreams build</strong> over seven years.
+        Press play, then hit the city with a shock and watch which side of the lagoon keeps growing.</p>
       </div>
 
       <div class="pop-controls">
         <button class="pop-play" id="popPlay" aria-label="Play or pause">▶ Play</button>
+        <div class="pop-speeds" id="popSpeeds" role="group" aria-label="Playback speed"></div>
         <input type="range" id="popScrub" min="0" max="83" step="1" value="0"
                aria-label="Month scrubber">
         <span class="pop-month" id="popMonth">Month 0</span>
@@ -185,7 +187,11 @@
         </div>
       </div>
 
-      <div class="pop-canvas" id="popCanvas"></div>
+      <div class="pop-canvas" id="popCanvas">
+        <div class="pop-chyron" id="popChyron" aria-hidden="true"></div>
+        <div class="pop-banner" id="popBanner" hidden></div>
+        <div class="pop-end" id="popEnd" hidden></div>
+      </div>
       <div class="pop-tip" id="popTip" hidden></div>
 
       <div class="pop-counts" id="popCounts"></div>
@@ -199,8 +205,9 @@
       degree towers). Colour is what this month is doing: <em>green</em> = building,
       <em>gold</em> = arrived (the dream completed), <em>red</em> = leaking more than building,
       <em>grey</em> = just surviving, <em>dark</em> = the dream has died (paused so long it never
-      restarts). The flat district on the far left is the Control — households with no dream;
-      shocks can only push them deeper. Drag to orbit, scroll to zoom, hover a block for its story.</p>
+      restarts). Mushin stays a flat grey field — the Control, households with no dream; shocks
+      can only push them deeper. The geography is stylized (real neighborhoods, approximate
+      positions). Drag to orbit, scroll to zoom, hover a block for its story.</p>
       <p class="fineprint">⚠ The 1,000 households are procedural variations of the seven synthetic
       ledgers — an illustration of differing exposure, not a demographic model of Lagos.</p>
     </aside>

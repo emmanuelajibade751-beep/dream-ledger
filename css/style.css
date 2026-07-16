@@ -476,6 +476,91 @@ main { max-width: 1060px; margin: 0 auto; padding: 34px 24px 80px; }
 }
 .pop-play:hover { transform: translateY(-1px); filter: brightness(1.1); }
 .pop-controls input[type="range"] { flex: 1; accent-color: var(--dream-green); }
+.pop-speeds { display: inline-flex; gap: 4px; flex: 0 0 auto; }
+.pop-speed {
+  appearance: none;
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.pop-speed.is-active { color: var(--page); background: var(--ink-2); font-weight: 700; }
+
+/* cinematic overlays */
+.pop-chyron {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  z-index: 20;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.pop-chyron.is-on { opacity: 1; }
+.pop-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.94);
+  z-index: 22;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(20, 8, 8, 0.78);
+  border: 1px solid rgba(230, 103, 103, 0.6);
+  border-radius: 14px;
+  padding: 16px 28px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  text-align: center;
+}
+.pop-banner.stab-banner { border-color: rgba(12, 163, 12, 0.6); background: rgba(8, 20, 8, 0.78); }
+.pop-banner.is-on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.pop-end {
+  position: absolute;
+  inset: auto 18px 18px 18px;
+  z-index: 21;
+  background: rgba(15, 15, 14, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  backdrop-filter: blur(4px);
+}
+.pop-end b { color: var(--ink); font-family: var(--font-display); }
+.pop-end button {
+  appearance: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--page);
+  background: var(--dream-green);
+  border: 0;
+  border-radius: 99px;
+  padding: 8px 16px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
 .pop-month {
   font-family: var(--font-display);
   font-size: 12.5px;
