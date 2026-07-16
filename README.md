@@ -85,6 +85,14 @@ py -3 -m http.server 4173 --directory .        # then open http://localhost:4173
        that shocks are measured against — "let the ones without a dream die."
     2. **Dollar-earner** — remote worker/freelancer earning USD from Lagos. The one archetype for
        whom currency collapse is a STABILIZER (naira income quadruples). Makes shocks two-sided.
+- **Phase 4b — cinematic Lagos timelapse: DONE (2026-07-17).** The population now plays on a
+  stylized Lagos stage (hand-built mainland/lagoon/island-strip polygons in `population.js` —
+  `MAINLAND`/`ISLAND_STRIP`; real neighborhoods, approximate positions): Mushin (control),
+  Agege (AMA), Ikorodu (landlord), Yaba (japa), Gbagada (kids), Surulere (dollar), Lekki (insta).
+  ~50s run at 1× (`MONTH_MS=600`) with 0.5×/1×/2× chips; continuous height/colour tweening;
+  YEAR chyron; event banner + 0.4× dramatic slowdown + coloured ripple sweeping west→east at
+  the hit month; death slump + completion glow; ending summary card with replay; auto-orbit
+  that yields on user grab; honors prefers-reduced-motion (no autoplay/orbit/ripple).
 - **Phase 4 — population of 1,000: DONE (2026-07-17).** `js/population.js` (ES module;
   three.js r160 via importmap CDN + OrbitControls). 1,000 deterministic procedural households
   sampled around the seven archetypes (mix: 350 control / 250 AMA / 120 landlord / 120 japa /
