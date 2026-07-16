@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money Lens — The Dream Ledger, interactive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="kicker">Subtraction 07 · Money is the lens</p>
+    <h1>Seven Lagos lives,<br><span class="accent">one ledger at a time</span></h1>
+    <p class="lede">
+      Five dreams, one household that never gets to dream, and one paid in dollars —
+      ~82,000 synthetic transactions over 6–10 years each. Every line below is a life being
+      paid for: cement, tuition, visa fees, generator fuel, bets.
+      <strong>Click a person to enter their life;</strong> hover the dots to see the moment a
+      milestone landed — then scroll down and shock the city.
+    </p>
+  </div>
+</header>
+
+<main>
+  <!-- Persona cards double as the legend and the focus control -->
+  <section class="cast" id="cast" aria-label="The five personas"></section>
+
+  <section class="stage">
+    <div class="controls" role="toolbar" aria-label="Chart controls">
+      <div class="metric-toggle" id="metricToggle">
+        <button class="metric-btn is-active" data-metric="dream_cum">The dream (₦ built)</button>
+        <button class="metric-btn" data-metric="balance">The bank account (₦)</button>
+      </div>
+      <button class="clear-btn" id="clearFocus" hidden>← Back to all five</button>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <h2 id="chartTitle">The climb — what each dream accumulated</h2>
+        <p id="chartSub">Journeys aligned at month 0. One of these lines rockets — click it to find out why.</p>
+      </div>
+      <div class="chart-wrap" id="chart"></div>
+      <div class="tooltip" id="tooltip" role="status" aria-live="polite" hidden></div>
+      <div class="milestone-pop" id="milestonePop" hidden></div>
+    </div>
+
+    <!-- Flag 4: honest descriptions surfaced to the reader -->
+    <aside class="reading" id="reading">
+      <h3>How to read this</h3>
+      <p id="readingBody">
+        Each line is one person's <em>cumulative dream spending</em> — money that physically became
+        the dream (cement, tuition, tickets, content). Steeper is not always better: a line can rise
+        because the dream is <em>succeeding</em>, or because the world made the same dream more
+        expensive. The dots are real milestones from each ledger.
+      </p>
+      <p class="fineprint" id="readingCaveat">
+        ⚠ Honesty note: each person's “% of target” is measured against a <em>different kind of
+        target</em>, so percentages are never compared between people here — each life is read on
+        its own terms. All data is synthetic (real 2025 anchor prices, interpolated daily entries)
+        and illustrative, not predictive.
+      </p>
+    </aside>
+
+    <details class="table-view">
+      <summary>View the milestones as a table</summary>
+      <div id="tableWrap"></div>
+    </details>
+  </section>
+
+  <!-- Phase 2a — the life in weeks -->
+  <section class="stage">
+    <div class="chart-card">
+      <div class="chart-head">
+        <h2>The life in weeks — every square is one week lived</h2>
+        <p>Stand back and read the field, not the squares. Hover any week to see what the
+        discretionary money did; ringed squares are milestone weeks.</p>
+      </div>
+      <div class="heat-legend" aria-hidden="true">
+        <span class="hl-item"><i style="background:#e04b3f"></i> leaked hard</span>
+        <span class="hl-item"><i style="background:#8a3430"></i> leaked</span>
+        <span class="hl-item"><i style="background:#33332f"></i> just surviving</span>
+        <span class="hl-item"><i style="background:#3a7d2c"></i> built</span>
+        <span class="hl-item"><i style="background:#5ec43a"></i> built hard</span>
+        <span class="hl-item"><i class="hl-ring"></i> milestone week</span>
+      </div>
+      <div class="chart-wrap" id="heatmap"></div>
+    </div>
+    <aside class="reading">
+      <h3>How to read this</h3>
+      <p>Each row of squares is one year; each square one week. Colour answers a single question:
+      <em>what did the spare money do that week</em> — build the dream (green) or leak away (red)?
+      Survival spending is deliberately ignored — it dominates every week of every life, and would
+      paint the whole wall grey. The Landlord greens up in his build years; AMA is a near-solid red
+      wall — a betting habit visible from orbit.</p>
+      <p class="fineprint">⚠ Colour shows <em>direction</em>, not size: a ₦500 green week and a
+      ₦500,000 green week look the same. Hover for the actual amounts.</p>
+    </aside>
+  </section>
+
+  <!-- Phase 3 — the simulator -->
+  <section class="stage">
+    <div class="chart-card sim-card">
+      <div class="chart-head">
+        <h2>The simulator — shock the city, steady the city</h2>
+        <p>Pick shocks (red) and stabilizers (green), choose when they hit, and watch seven
+        lives bend. Dashed ghosts are the unshocked baseline.</p>
+      </div>
+
+      <div class="sim-controls">
+        <div class="sim-group">
+          <h4>Shocks</h4>
+          <div class="sim-btns" id="shockBtns"></div>
+        </div>
+        <div class="sim-group">
+          <h4>Stabilizers</h4>
+          <div class="sim-btns" id="stabBtns"></div>
+        </div>
+        <div class="sim-group sim-when">
+          <h4>It hits in year <span id="whenLabel">3</span></h4>
+          <input type="range" id="whenSlider" min="1" max="5" step="1" value="3"
+                 aria-label="Year the events hit">
+          <button class="clear-btn" id="simReset">Reset</button>
+        </div>
+      </div>
+
+      <div class="sim-toggle metric-toggle" id="simMetricToggle">
+        <button class="metric-btn is-active" data-sim-metric="progress">The dream (real terms)</button>
+        <button class="metric-btn" data-sim-metric="balance">The bank account</button>
+      </div>
+
+      <div class="chart-wrap" id="simChart"></div>
+
+      <div class="verdicts" id="verdicts"></div>
+      <div class="sim-notes" id="simNotes"></div>
+    </div>
+
+    <aside class="reading">
+      <h3>How to read this</h3>
+      <p>“The dream (real terms)” counts what the spending could actually buy — so when a currency
+      collapse doubles the price of a foreign-priced dream, the same naira builds half as much.
+      Dreams also <em>pause</em> automatically when a household is drowning (deep in debt, dream
+      spending stops) — watch lines go flat, not just lower. Money already turned into cement or
+      a skill doesn't un-become the dream.</p>
+      <p class="fineprint">⚠ This is an illustration engine, not a forecast: multipliers are
+      curated judgments applied to synthetic ledgers. It shows <em>how exposure differs</em> —
+      who bends, who breaks, who benefits — not what will happen.</p>
+    </aside>
+  </section>
+
+  <!-- Phase 2b — the Menzel artifact boards -->
+  <section class="stage">
+    <div class="chart-card">
+      <div class="chart-head">
+        <h2>What the money became — the dream as objects</h2>
+        <p>Everything the ledger literally bought, tiled by cost. The red tiles sit where they sat
+        in the life: right among the dream.</p>
+      </div>
+      <div class="artifact-tabs" id="artifactTabs" role="tablist" aria-label="Choose a persona"></div>
+      <div class="chart-wrap" id="artifacts"></div>
+    </div>
+    <aside class="reading">
+      <h3>How to read this</h3>
+      <p id="artifactReading">Tile area = naira spent. This is the Peter Menzel “person with all
+      their possessions” view of a dream: the house appears in parts, the degree in instalments —
+      and the leak appears as red objects sitting among them, bought with the same hands.</p>
+      <p class="fineprint">⚠ Totals over the whole journey — time is flattened here. The heatmap
+      above carries the rhythm; this board carries the weight.</p>
+    </aside>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <p>Money Lens · LLL Laboratory — Subtractive City, Lagos. Data: five synthetic dream ledgers
+  (engines/outputs). Interactive layer, Phase 1. Coming next: milestone artifact boards, shocks
+  &amp; stabilizers (subsidy removal ↔ subsidy), a population of 1,000 dreams.</p>
+</footer>
+
+<div class="float-tip" id="floatTip" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="js/app.js"></script>
+<script src="js/heatmap.js"></script>
+<script src="js/artifacts.js"></script>
+<script src="js/simulator.js"></script>
+</body>
+</html>
