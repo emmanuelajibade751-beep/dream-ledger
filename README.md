@@ -85,6 +85,14 @@ py -3 -m http.server 4173 --directory .        # then open http://localhost:4173
        that shocks are measured against — "let the ones without a dream die."
     2. **Dollar-earner** — remote worker/freelancer earning USD from Lagos. The one archetype for
        whom currency collapse is a STABILIZER (naira income quadruples). Makes shocks two-sided.
+- **Phase 4c — real OSM map layers: DONE (2026-07-17).** `fetch_lagos_map.py` pulls live
+  geometry from Overpass (coastline→ocean polygon, lagoon/creek water, motorway/trunk/primary
+  roads, rail, LGA boundaries) → `data/lagos_map.json` (52 KB; RDP-simplified, projected to
+  map units, ~2.48 units/km, bbox 6.36–6.70N 3.10–3.65E). Layers render as toggle chips
+  (Roads / Rail / LGA boundaries / Neighborhoods); ocean+water always on. District anchors
+  are true OSM coordinates. Attribution: © OpenStreetMap contributors (ODbL), shown in UI.
+  Re-fetch any time: `PYTHONIOENCODING=utf-8 py -3 fetch_lagos_map.py` (Overpass rate-limits;
+  script retries across two endpoints).
 - **Phase 4b — cinematic Lagos timelapse: DONE (2026-07-17).** The population now plays on a
   stylized Lagos stage (hand-built mainland/lagoon/island-strip polygons in `population.js` —
   `MAINLAND`/`ISLAND_STRIP`; real neighborhoods, approximate positions): Mushin (control),
