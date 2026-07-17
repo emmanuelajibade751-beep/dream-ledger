@@ -16,15 +16,16 @@ const MIX = {
 const ORDER = ["coping_control", "landlord", "japa", "ama",
                "kids_abroad", "instagrammer", "dollar_earner"];
 
-/* Real neighborhoods from the persona specs — stylized positions (x east, z south). */
+/* Real neighborhoods from the persona specs. Anchors are filled at boot from
+   data/lagos_map.json (true OSM coordinates projected to map units). */
 const DISTRICTS = {
-  coping_control: { anchor: [-20, -14], r: 8.5, label: "Mushin" },
-  ama:            { anchor: [-32, -30], r: 7.5, label: "Agege" },
-  landlord:       { anchor: [36, -21],  r: 5.5, label: "Ikorodu" },
-  japa:           { anchor: [-1, -3],   r: 5.0, label: "Yaba" },
-  kids_abroad:    { anchor: [10, -11],  r: 4.0, label: "Gbagada" },
-  dollar_earner:  { anchor: [-14, 3],   r: 2.4, label: "Surulere" },
-  instagrammer:   { anchor: [36, 17],   r: 9.0, rz: 1.8, label: "Lekki" },
+  coping_control: { anchor: [0, 0], r: 8.5, label: "Mushin" },
+  ama:            { anchor: [0, 0], r: 7.5, label: "Agege" },
+  landlord:       { anchor: [0, 0], r: 5.5, label: "Ikorodu" },
+  japa:           { anchor: [0, 0], r: 4.6, label: "Yaba" },
+  kids_abroad:    { anchor: [0, 0], r: 3.2, label: "Gbagada" },
+  dollar_earner:  { anchor: [0, 0], r: 2.4, label: "Surulere" },
+  instagrammer:   { anchor: [0, 0], r: 9.0, rz: 2.4, label: "Lekki" },
 };
 
 const CAN_COMPLETE = new Set(["landlord", "japa", "kids_abroad", "dollar_earner"]);
@@ -194,7 +195,7 @@ function layoutAgents() {
   }
 }
 
-/* ================= the stylized Lagos stage ================= */
+/* ================= the real-Lagos stage (OSM layers) ================= */
 function shapeFrom(points) {
   const s = new THREE.Shape();
   s.moveTo(points[0][0], points[0][1]);
@@ -203,42 +204,68 @@ function shapeFrom(points) {
   return s;
 }
 
-// (x, zPlan) pairs — mainland wraps over the top of the lagoon; the bite IS the lagoon.
-const MAINLAND = [
-  [-75, -48], [75, -48], [75, 4], [52, 6], [50, -12], [24, -14],
-  [14, 0], [10, 10], [2, 12], [-8, 8], [-75, 10],
-];
-// Lagos Island → VI → the Lekki peninsula strip.
-const ISLAND_STRIP = [
-  [-2, 14], [10, 13], [30, 14], [66, 15], [68, 19], [30, 20], [8, 20], [0, 18],
-];
-
-function buildStage(scene) {
-  // water everywhere beneath
-  const water = new THREE.Mesh(
-    new THREE.PlaneGeometry(420, 300),
-    new THREE.MeshBasicMaterial({ color: 0x0d1319 }));
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = -0.09;
-  scene.add(water);
-
-  for (const pts of [MAINLAND, ISLAND_STRIP]) {
-    const geo = new THREE.ShapeGeometry(shapeFrom(pts));
+function polysMesh(polys, color, y) {
+  const group = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
+  for (const ring of polys) {
+    if (!ring || ring.length < 3) continue;
+    const geo = new THREE.ShapeGeometry(shapeFrom(ring));
     geo.rotateX(Math.PI / 2);
-    const land = new THREE.Mesh(geo,
-      new THREE.MeshBasicMaterial({ color: 0x1a1b17, side: THREE.DoubleSide }));
-    land.position.y = -0.04;
-    scene.add(land);
-
-    // faint coastline
-    const line = new THREE.LineLoop(
-      new THREE.BufferGeometry().setFromPoints(
-        pts.map(([x, z]) => new THREE.Vector3(x, 0.02, z))),
-      new THREE.LineBasicMaterial({ color: 0x3c4a41, transparent: true, opacity: 0.8 }));
-    scene.add(line);
+    const m = new THREE.Mesh(geo, mat);
+    m.position.y = y;
+    group.add(m);
   }
+  return group;
+}
+
+function linesMesh(polylines, color, opacity, y) {
+  // merge every polyline into ONE LineSegments draw call
+  const pos = [];
+  for (const line of polylines) {
+    for (let i = 0; i < line.length - 1; i++) {
+      pos.push(line[i][0], y, line[i][1], line[i + 1][0], y, line[i + 1][1]);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  return new THREE.LineSegments(geo,
+    new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+}
+
+const layers = {};   // name -> THREE.Group / Object3D (for the toggle chips)
+
+function buildStage(scene, map) {
+  const [[x0, z0], [x1, z1]] = map.bbox_units;
+  const wBox = x1 - x0, dBox = z1 - z0;
+
+  // land base = the bbox card; real water is painted on top of it
+  const land = new THREE.Mesh(
+    new THREE.PlaneGeometry(wBox, dBox),
+    new THREE.MeshBasicMaterial({ color: 0x1a1b17 }));
+  land.rotation.x = -Math.PI / 2;
+  land.position.set((x0 + x1) / 2, -0.08, (z0 + z1) / 2);
+  scene.add(land);
+
+  // real ocean + lagoon + creeks (always on — they ARE the map)
+  scene.add(polysMesh(map.ocean, 0x0d1319, -0.05));
+  scene.add(polysMesh(map.water, 0x0e161d, -0.045));
+
+  // toggleable layers
+  layers.roads = new THREE.Group();
+  layers.roads.add(linesMesh(map.roads_major, 0x565b50, 0.85, 0.015));
+  layers.roads.add(linesMesh(map.roads_minor, 0x3a3d36, 0.6, 0.012));
+  scene.add(layers.roads);
+
+  layers.rail = linesMesh(map.rail, 0x6b5a4a, 0.55, 0.014);
+  layers.rail.visible = false;
+  scene.add(layers.rail);
+
+  layers.lga = linesMesh(map.lga, 0x2f4a3a, 0.7, 0.013);
+  layers.lga.visible = false;
+  scene.add(layers.lga);
 
   // district tint pools + labels
+  layers.labels = new THREE.Group();
   for (const key of ORDER) {
     const d = DISTRICTS[key];
     const pool = new THREE.Mesh(
@@ -250,11 +277,13 @@ function buildStage(scene) {
     pool.rotation.x = -Math.PI / 2;
     pool.position.set(d.anchor[0], -0.01, d.anchor[1]);
     if (d.rz) pool.scale.set(1, d.rz / d.r, 1);
-    scene.add(pool);
-    scene.add(makeLabel(d.label, d.anchor[0], d.anchor[1] + (d.rz ? d.rz : d.r) + 2.6));
+    layers.labels.add(pool);
+    layers.labels.add(
+      makeLabel(d.label, d.anchor[0], d.anchor[1] + (d.rz ? d.rz : d.r) + 2.6));
   }
-  scene.add(makeLabel("Lagos Lagoon", 32, -3, 0.55));
-  scene.add(makeLabel("Atlantic", 20, 30, 0.45));
+  layers.labels.add(makeLabel("Lagos Lagoon", 26, -8, 0.5));
+  layers.labels.add(makeLabel("Atlantic", 10, 38, 0.45));
+  scene.add(layers.labels);
 }
 
 function makeLabel(text, x, z, alpha = 0.9) {
@@ -281,7 +310,7 @@ function makeLabel(text, x, z, alpha = 0.9) {
 /* ================= three.js ================= */
 const H_SCALE = 11;
 
-function initThree() {
+function initThree(map) {
   const wrap = document.getElementById("popCanvas");
   const W = wrap.clientWidth, H = wrap.clientHeight;
 
@@ -311,7 +340,7 @@ function initThree() {
   sun.position.set(40, 80, 30);
   scene.add(sun);
 
-  buildStage(scene);
+  buildStage(scene, map);
 
   const geo = new THREE.BoxGeometry(0.85, 1, 0.85);
   geo.translate(0, 0.5, 0);
@@ -527,6 +556,11 @@ function updateReadout(t) {
 function setMonth(t) {
   pop.tf = Math.max(0, Math.min(MONTHS - 1, t));
   pop.bannerShownFor = pop.tf >= pop.when * 12 ? pop.when * 12 : -1;
+  // keep the chyron honest when scrubbing while paused
+  pop.lastYear = Math.floor(pop.tf / 12) + 1;
+  const ch = document.getElementById("popChyron");
+  ch.textContent = "YEAR " + pop.lastYear;
+  ch.classList.add("is-on");
   paintFrame();
 }
 
@@ -610,14 +644,43 @@ function buildLegend() {
   }
 }
 
+/* ================= layer toggles ================= */
+function buildLayerChips() {
+  const wrap = document.getElementById("popLayers");
+  const defs = [
+    ["roads", "🛣️ Roads", true],
+    ["rail", "🚆 Rail", false],
+    ["lga", "🗺️ LGA boundaries", false],
+    ["labels", "📍 Neighborhoods", true],
+  ];
+  for (const [name, label, on] of defs) {
+    const b = document.createElement("button");
+    b.className = "pop-speed" + (on ? " is-active" : "");
+    b.textContent = label;
+    b.setAttribute("aria-pressed", String(on));
+    b.addEventListener("click", () => {
+      layers[name].visible = !layers[name].visible;
+      b.classList.toggle("is-active", layers[name].visible);
+      b.setAttribute("aria-pressed", String(layers[name].visible));
+    });
+    wrap.appendChild(b);
+  }
+}
+
 /* ================= boot ================= */
-function boot() {
+async function boot() {
   try {
+    const map = await (await fetch("data/lagos_map.json")).json();
+    for (const [key, h] of Object.entries(map.hoods)) {
+      DISTRICTS[key].anchor = [h.x, h.z];
+      DISTRICTS[key].label = h.label;
+    }
     buildAgents();
     simulateAll();
     layoutAgents();
-    initThree();
+    initThree(map);
     buildEventChips();
+    buildLayerChips();
     buildLegend();
     setMonth(0);
     updateReadout(0);

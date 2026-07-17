@@ -490,6 +490,7 @@ main { max-width: 1060px; margin: 0 auto; padding: 34px 24px 80px; }
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 .pop-speed.is-active { color: var(--page); background: var(--ink-2); font-weight: 700; }
+.pop-layers { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 
 /* cinematic overlays */
 .pop-chyron {
@@ -547,6 +548,7 @@ main { max-width: 1060px; margin: 0 auto; padding: 34px 24px 80px; }
   justify-content: space-between;
   backdrop-filter: blur(4px);
 }
+.pop-end[hidden] { display: none; }
 .pop-end b { color: var(--ink); font-family: var(--font-display); }
 .pop-end button {
   appearance: none;
