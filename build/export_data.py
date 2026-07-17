@@ -1,14 +1,15 @@
-# export_data.py — Phase 0 of the Interactive App.
-# Reads the five canonical ledger workbooks (READ-ONLY, per OWNERSHIP.md) and dumps
+# export_data.py — Phase 0 of the Interactive App. Lives in 06_Interactive_App/build/.
+# Reads the seven canonical ledger workbooks (READ-ONLY, per OWNERSHIP.md) and dumps
 # per-persona JSON the web app can load. Re-run any time the ledgers regenerate:
-#   PYTHONIOENCODING=utf-8 py -3 export_data.py
+#   cd 06_Interactive_App && PYTHONIOENCODING=utf-8 py -3 build/export_data.py
 import json
 import os
 import pandas as pd
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ENGINES_OUT = os.path.normpath(os.path.join(HERE, "..", "engines", "outputs"))
-DATA_DIR = os.path.join(HERE, "data")
+HERE = os.path.dirname(os.path.abspath(__file__))          # .../06_Interactive_App/build
+APP_ROOT = os.path.normpath(os.path.join(HERE, ".."))       # .../06_Interactive_App
+ENGINES_OUT = os.path.normpath(os.path.join(APP_ROOT, "..", "engines", "outputs"))
+DATA_DIR = os.path.join(APP_ROOT, "data")
 
 # Persona metadata. Colors are identity slots from a validated categorical palette
 # (dark-surface steps). Green/red are NOT used for identity — they stay reserved

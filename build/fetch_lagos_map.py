@@ -3,15 +3,17 @@
 # Layers: ocean (from natural=coastline), water (lagoon/creeks), roads
 # (motorway/trunk/primary), rail, LGA boundaries (admin_level=6).
 # Map data (c) OpenStreetMap contributors, ODbL - credited in the app UI.
-#   PYTHONIOENCODING=utf-8 py -3 fetch_lagos_map.py
+#   cd 06_Interactive_App && PYTHONIOENCODING=utf-8 py -3 build/fetch_lagos_map.py
+# Lives in 06_Interactive_App/build/ ; writes to ../data/lagos_map.json.
 import json
 import math
 import os
 import time
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "data", "lagos_map.json")
+HERE = os.path.dirname(os.path.abspath(__file__))          # .../06_Interactive_App/build
+APP_ROOT = os.path.normpath(os.path.join(HERE, ".."))       # .../06_Interactive_App
+OUT = os.path.join(APP_ROOT, "data", "lagos_map.json")
 
 # bbox (lat S, lon W, lat N, lon E) - covers Agege..Ikorodu..Lekki + lagoon + VI
 S, W, N, E = 6.36, 3.10, 6.70, 3.65
