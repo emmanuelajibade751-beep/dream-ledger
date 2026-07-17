@@ -15,8 +15,8 @@ only if you need the deeper research context — `../HANDOVER.md` (project) and
 - **Live:** https://emmanuelajibade751-beep.github.io/dream-ledger/
 - **Stack:** vanilla ES modules, **D3 v7** for 2-D charts, **three.js r160** for the 3-D city.
   No build step, no framework. Static files served as-is.
-- **Status:** Phases 0–4 DONE (+4b timelapse, +4c real map, + guided tour). Phase 5 (spatial
-  simulation) is next.
+- **Status:** Phases 0–4 DONE (+4b timelapse, +4c real map, +4d monthly event timeline,
+  + guided tour). Phase 5 (spatial simulation) is next.
 
 ---
 
@@ -249,6 +249,28 @@ the ripple lands at year 3) → artifact boards (closing). Started via the masth
   also the groundwork for deep-linking.
 - `population.js` chips carry `data-id` (added for the tour, matching simulator.js buttons).
 - Reduced-motion: no smooth scroll, no autoplay at the city stop (copy invites pressing Play).
+
+### Phase 4d — month-by-month event timeline ✅ (2026-07-17)
+The city's single "hits in year N" moment became a **schedule**: `pop.schedule = [{id, start
+(month 0-83), dur (months)}]`. `eventMults(key, i)` applies each event from its own start for its
+own duration (the user's dur REPLACES the event's built-in `window`, which is now only a default
+via `RAND_DUR`). Three modes (`pop.mode`):
+- **Neutral** (default) — empty schedule, pure baseline. End card still 163/7/146 (verified).
+- **Surprise me** — `genSchedule(seed)` via the existing `mulberry32`: 4–7 events, months 3–72,
+  ≥6-month spacing, ~60/40 shock/stab, durations from `RAND_DUR`. Deterministic: same seed, same
+  seven years. Seed input + Reroll. Seed 2026 is the shipped default history.
+- **Compose** — chips DROP an event at the currently-scrubbed month; each scheduled event is an
+  editable row (Year/Month/Duration selects + ✕). Editing a Surprise-me history silently switches
+  the mode to Compose ("an edited history is yours now"). Switching random→custom inherits the
+  schedule deliberately.
+Playback: YEAR chyron unchanged + new month sub-chyron (JANUARY…); banners/ripples/slowdown now
+fire per event via `pop.firedStarts` (re-armed on scrub via `rearmFired`); red/green start-month
+ticks overlay the scrubber. `window.MLCity = {reset, setSchedule, setMode, play}` is the public
+surface the tour uses (stop 5 schedules currency_collapse at month 30, "July of Year 3") — also
+the natural hook for future deep-links. Gotchas learned:
+- `[hidden]` needed a global `display:none !important` — flex/grid class rules were overriding it.
+- Scrubbing now dismisses a stale end card (`setMonth` hides `#popEnd`).
+- The 2-D simulator (simulator.js) is UNCHANGED — it keeps the year slider on purpose.
 
 ---
 

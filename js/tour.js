@@ -34,13 +34,6 @@
     if (el) el.click();
   }
 
-  // Press the city's play button only when it currently reads "Play"
-  // (population.js swaps its label to "Pause" while running).
-  function cityPlay() {
-    const b = document.getElementById("popPlay");
-    if (b && b.textContent.includes("Play")) b.click();
-  }
-
   /* ---------- the six stops (page order) ---------- */
 
   const STEPS = [
@@ -102,14 +95,17 @@
       body:
         "1,000 procedural households, each in its real neighborhood. Height = naira actually " +
         "built into the dream; green is building, gold has arrived, red is leaking, grey " +
-        "survives. The same currency collapse hits in year 3 — watch the ripple sweep the city " +
-        "and which side of the lagoon keeps growing. Even with no shock at all, only about 1 " +
-        "dream in 6 ever completes." +
+        "survives. We composed one event for this run: a currency collapse landing in July of " +
+        "Year 3 — watch the ripple sweep the city and which side of the lagoon keeps growing. " +
+        "You can also run it neutral, let a seed surprise you, or drop your own shocks on any " +
+        "month." +
         (REDUCED ? " Press ▶ Play to run the seven years." : ""),
       onEnter() {
-        clickIf("popReset");
-        setEventChip("#popShockBtns", "currency_collapse", true);
-        if (!REDUCED) cityPlay();
+        if (window.MLCity) {
+          window.MLCity.reset();
+          window.MLCity.setSchedule([{ id: "currency_collapse", start: 30, dur: 54 }]);
+          if (!REDUCED) window.MLCity.play(true);
+        }
       },
     },
     {

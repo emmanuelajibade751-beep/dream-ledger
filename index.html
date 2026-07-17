@@ -159,38 +159,56 @@
         <h2>Lagos, in timelapse — 1,000 dreams at once</h2>
         <p>Every block is a household, placed in its real neighborhood — Mushin's copers,
         Agege's “make-it” dreamers, Ikorodu's builders, Lekki's performers, a few dollar
-        earners in Surulere. Blocks <strong>grow as dreams build</strong> over seven years.
-        Press play, then hit the city with a shock and watch which side of the lagoon keeps growing.</p>
+        earners in Surulere. Blocks <strong>grow as dreams build</strong> over seven years,
+        month by month. Run it neutral, let a seed surprise you — or compose your own seven
+        years: drop shocks and stabilizers on any month, for as long as you choose.</p>
       </div>
 
       <div class="pop-controls">
         <button class="pop-play" id="popPlay" aria-label="Play or pause">▶ Play</button>
         <div class="pop-speeds" id="popSpeeds" role="group" aria-label="Playback speed"></div>
-        <input type="range" id="popScrub" min="0" max="83" step="1" value="0"
-               aria-label="Month scrubber">
-        <span class="pop-month" id="popMonth">Month 0</span>
+        <div class="pop-scrub-wrap">
+          <input type="range" id="popScrub" min="0" max="83" step="1" value="0"
+                 aria-label="Month scrubber">
+          <div class="pop-scrub-marks" id="popScrubMarks" aria-hidden="true"></div>
+        </div>
+        <span class="pop-month" id="popMonth">Jan · Year 1</span>
       </div>
 
-      <div class="sim-controls pop-sim-controls">
+      <div class="pop-mode-row">
+        <div class="metric-toggle" id="popModes" role="group" aria-label="Event mode">
+          <button class="metric-btn is-active" data-mode="neutral">🌤 Neutral</button>
+          <button class="metric-btn" data-mode="random">🎲 Surprise me</button>
+          <button class="metric-btn" data-mode="custom">🎛 Compose</button>
+        </div>
+        <button class="clear-btn" id="popReset">Reset</button>
+      </div>
+
+      <div class="pop-seed" id="popSeedPanel" hidden>
+        <label for="popSeed">Seed</label>
+        <input type="number" id="popSeed" value="2026" min="0" step="1"
+               aria-label="Random seed for the event history">
+        <button class="clear-btn" id="popReroll">⟲ Reroll</button>
+        <span class="pop-seed-note">Same seed, same seven years — reroll for a different history.</span>
+      </div>
+
+      <div class="sim-controls pop-sim-controls" id="popComposer" hidden>
         <div class="sim-group">
-          <h4>Shocks</h4>
+          <h4>Shocks — click one to drop it at the current month</h4>
           <div class="sim-btns" id="popShockBtns"></div>
         </div>
         <div class="sim-group">
           <h4>Stabilizers</h4>
           <div class="sim-btns" id="popStabBtns"></div>
         </div>
-        <div class="sim-group sim-when">
-          <h4>Hits in year <span id="popWhenLabel">3</span></h4>
-          <input type="range" id="popWhenSlider" min="1" max="5" step="1" value="3"
-                 aria-label="Year the events hit the city">
-          <button class="clear-btn" id="popReset">Reset</button>
-        </div>
       </div>
+
+      <div class="pop-schedule" id="popSchedule"></div>
 
       <div class="pop-layers" id="popLayers" role="group" aria-label="Map layers"></div>
       <div class="pop-canvas" id="popCanvas">
         <div class="pop-chyron" id="popChyron" aria-hidden="true"></div>
+        <div class="pop-chyron-month" id="popChyronMonth" aria-hidden="true"></div>
         <div class="pop-banner" id="popBanner" hidden></div>
         <div class="pop-end" id="popEnd" hidden></div>
       </div>

@@ -63,10 +63,29 @@ function mulberry32(seed) {
   };
 }
 
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/* Typical duration range (months) per event — sampled by Surprise-me mode and
+   used as the Compose default. Replaces the event's built-in `window` when a
+   schedule entry carries its own `dur`. */
+const RAND_DUR = {
+  currency_collapse: [12, 36], subsidy_removed: [12, 30], power_collapse: [6, 18],
+  cash_crunch: [3, 6], ponzi_wave: [4, 8], platform_crackdown: [6, 12],
+  subsidy_back: [12, 30], ajo_payout: [1, 2], remittance_wave: [12, 24],
+  rent_income: [12, 36], viral_breakthrough: [12, 24], stable_naira: [12, 30],
+};
+
 const pop = {
   agents: [], tf: 0, lastMonth: -1, playing: false, speed: 1,
-  active: new Set(), when: 3, three: null,
-  slowUntil: 0, ripple: null, bannerShownFor: -1, lastYear: 0,
+  mode: "neutral",            // "neutral" | "random" | "custom"
+  seed: 2026,
+  schedule: [],               // [{id, start (0-83), dur (months)}]
+  firedStarts: new Set(),     // schedule indices whose banner already fired this run
+  three: null,
+  slowUntil: 0, ripple: null, lastYear: 0, lastMonthName: -1,
 };
 
 /* ================= agents & engine (unchanged model) ================= */
@@ -93,14 +112,18 @@ function buildAgents() {
   }
 }
 
-function eventMults(key, offset) {
+/* Multipliers at absolute month i: each scheduled event applies from its own
+   start month for its own duration (the user-chosen dur REPLACES the event's
+   built-in window — that window is only a default now). */
+function eventMults(key, i) {
   const m = { income: 1, essential: 1, coping: 1, leak: 1, dreamSpend: 1, dreamCost: 1 };
   let oneOff = 0;
-  for (const id of pop.active) {
-    const ev = window.ML_EVENTS[id];
+  for (const s of pop.schedule) {
+    const ev = window.ML_EVENTS[s.id];
     const over = ev.per[key] || {};
-    if (offset === 0) oneOff += (over.oneOff !== undefined ? over.oneOff : (ev.base.oneOff || 0));
-    if (offset < 0 || offset >= ev.window) continue;
+    const off = i - s.start;
+    if (off === 0) oneOff += (over.oneOff !== undefined ? over.oneOff : (ev.base.oneOff || 0));
+    if (off < 0 || off >= s.dur) continue;
     for (const f of Object.keys(m)) {
       const v = over[f] !== undefined ? over[f] : (ev.base[f] !== undefined ? ev.base[f] : 1);
       m[f] *= v;
@@ -109,9 +132,39 @@ function eventMults(key, offset) {
   return { m, oneOff };
 }
 
+/* Deterministic random history: same seed, same seven years. 4–7 events across
+   months 3–72, ≥6 months between starts, ~60/40 shock/stab, no repeats. */
+function genSchedule(seed) {
+  const rng = mulberry32((seed >>> 0) || 1);
+  const ids = Object.keys(window.ML_EVENTS);
+  const shocks = ids.filter((id) => window.ML_EVENTS[id].kind === "shock");
+  const stabs = ids.filter((id) => window.ML_EVENTS[id].kind === "stab");
+  const n = 4 + Math.floor(rng() * 4);
+  const sched = [];
+  const used = new Set();
+  let guard = 0;
+  while (sched.length < n && guard++ < 300) {
+    const pool = rng() < 0.6 ? shocks : stabs;
+    const id = pool[Math.floor(rng() * pool.length)];
+    if (used.has(id)) continue;
+    const start = 3 + Math.floor(rng() * 70);
+    if (sched.some((s) => Math.abs(s.start - start) < 6)) continue;
+    const [lo, hi] = RAND_DUR[id] || [6, 18];
+    const dur = Math.min(MONTHS - start, lo + Math.floor(rng() * (hi - lo + 1)));
+    used.add(id);
+    sched.push({ id, start, dur });
+  }
+  sched.sort((a, b) => a.start - b.start);
+  return sched;
+}
+
+function defaultDur(id, start) {
+  const [lo, hi] = RAND_DUR[id] || [6, 18];
+  return Math.min(MONTHS - start, Math.round((lo + hi) / 2));
+}
+
 function simulateAgent(ag) {
   const src = state.personas[ag.key].monthly;
-  const T = pop.when * 12;
   const avgInc = d3.mean(src, (r) => r.income) * ag.jInc;
   const avgEss = Math.abs(d3.mean(src, (r) => r.essential)) * ag.jEss;
   const avgCop = Math.abs(d3.mean(src, (r) => r.coping)) * ag.jEss;
@@ -128,8 +181,7 @@ function simulateAgent(ag) {
   for (let i = 0; i < MONTHS; i++) {
     const r = src[Math.min(i, ag.n - 1)];
     const frozen = i >= ag.n;
-    const off = i - T;
-    const { m, oneOff } = eventMults(ag.key, off);
+    const { m, oneOff } = eventMults(ag.key, i);
 
     if (!frozen) {
       const inc = r.income * ag.jInc * m.income;
@@ -140,13 +192,15 @@ function simulateAgent(ag) {
         (avgInc * m.income - avgEss * m.essential - avgCop * m.coping) / baseSurplus));
       let dream = dead ? 0 : r.dream * ag.jDream * m.dreamSpend * capacity;
 
+      // a dream paused 15 straight months is dead, whenever those months fall
       if (bal < -2 * avgEss && dream < 0) {
         dream = 0;
-        if (off >= 0) pausedRun++;
+        pausedRun++;
       } else if (dream < 0) pausedRun = 0;
       if (pausedRun >= 15) dead = true;
 
-      if (off === 0 && oneOff !== 0 && bal > 0) bal += bal * oneOff;
+      // oneOff is nonzero exactly at each scheduled event's start month
+      if (oneOff !== 0 && bal > 0) bal += bal * oneOff;
       bal += inc + ess + cop + dream + r.savings + leak + r.social;
       progress += Math.abs(dream) / m.dreamCost;
 
@@ -460,6 +514,16 @@ function paintFrame() {
 }
 
 /* ================= cinematic moments ================= */
+function updateMonthChyron() {
+  const mo = Math.min(MONTHS - 1, Math.floor(pop.tf)) % 12;
+  if (mo === pop.lastMonthName) return;
+  pop.lastMonthName = mo;
+  const el = document.getElementById("popChyronMonth");
+  el.classList.remove("is-on");
+  el.textContent = MONTH_NAMES[mo];
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-on")));
+}
+
 function checkMoments() {
   // year chyron
   const year = Math.floor(pop.tf / 12) + 1;
@@ -470,11 +534,18 @@ function checkMoments() {
     ch.textContent = "YEAR " + year;
     requestAnimationFrame(() => requestAnimationFrame(() => ch.classList.add("is-on")));
   }
-  // event banner + ripple + dramatic slowdown when the hit month arrives
-  const T = pop.when * 12;
-  if (pop.active.size && pop.tf >= T && pop.bannerShownFor !== T) {
-    pop.bannerShownFor = T;
-    const evs = [...pop.active].map((id) => window.ML_EVENTS[id]);
+  updateMonthChyron();
+
+  // per-event banner + ripple + slowdown as EACH scheduled start month arrives
+  const arriving = [];
+  pop.schedule.forEach((s, idx) => {
+    if (pop.tf >= s.start && !pop.firedStarts.has(idx)) {
+      pop.firedStarts.add(idx);
+      arriving.push(s);
+    }
+  });
+  if (arriving.length) {
+    const evs = arriving.map((s) => window.ML_EVENTS[s.id]);
     const anyShock = evs.some((e) => e.kind === "shock");
     const banner = document.getElementById("popBanner");
     banner.textContent = evs.map((e) => e.icon + " " + e.label).join("  ·  ");
@@ -488,6 +559,12 @@ function checkMoments() {
       pop.ripple = { start: performance.now(), kind: anyShock ? "shock" : "stab" };
     }
   }
+}
+
+/* banners for months at-or-before t stay quiet; everything later re-arms */
+function rearmFired(t) {
+  pop.firedStarts = new Set();
+  pop.schedule.forEach((s, idx) => { if (s.start <= t) pop.firedStarts.add(idx); });
 }
 
 function showEndCard() {
@@ -504,7 +581,8 @@ function showEndCard() {
   btn.textContent = "⟲ Replay";
   btn.addEventListener("click", () => {
     end.hidden = true;
-    pop.tf = 0; pop.lastYear = 0; pop.bannerShownFor = -1;
+    pop.tf = 0; pop.lastYear = 0; pop.lastMonthName = -1;
+    rearmFired(-1);
     play(true);
   });
   end.append(txt, btn);
@@ -548,19 +626,22 @@ function updateReadout(t) {
     wrap.appendChild(el);
   }
   document.getElementById("popMonth").textContent =
-    `Month ${t} · Year ${Math.floor(t / 12) + 1} of 7`;
+    `${MONTH_ABBR[t % 12]} · Year ${Math.floor(t / 12) + 1} of 7`;
   document.getElementById("popScrub").value = t;
 }
 
 /* ================= controls ================= */
 function setMonth(t) {
   pop.tf = Math.max(0, Math.min(MONTHS - 1, t));
-  pop.bannerShownFor = pop.tf >= pop.when * 12 ? pop.when * 12 : -1;
-  // keep the chyron honest when scrubbing while paused
+  rearmFired(Math.floor(pop.tf));   // scrubbing back re-arms later banners
+  if (pop.tf < MONTHS - 1.01) document.getElementById("popEnd").hidden = true;
+  // keep the chyrons honest when scrubbing while paused
   pop.lastYear = Math.floor(pop.tf / 12) + 1;
   const ch = document.getElementById("popChyron");
   ch.textContent = "YEAR " + pop.lastYear;
   ch.classList.add("is-on");
+  pop.lastMonthName = -1;
+  updateMonthChyron();
   paintFrame();
 }
 
@@ -568,46 +649,169 @@ function play(on) {
   pop.playing = on;
   document.getElementById("popPlay").textContent = on ? "❚❚ Pause" : "▶ Play";
   if (on && pop.tf >= MONTHS - 1.01) {
-    pop.tf = 0; pop.lastYear = 0; pop.bannerShownFor = -1;
+    pop.tf = 0; pop.lastYear = 0; pop.lastMonthName = -1;
+    rearmFired(-1);
     document.getElementById("popEnd").hidden = true;
   }
 }
 
-function buildEventChips() {
+/* ================= schedule plumbing ================= */
+function applySchedule() {
+  pop.schedule.sort((a, b) => a.start - b.start);
+  simulateAll();
+  rearmFired(Math.floor(pop.tf));
+  document.getElementById("popEnd").hidden = true;
+  paintFrame();
+  updateReadout(Math.floor(pop.tf));
+  renderSchedule();
+  renderScrubMarks();
+}
+
+// UI-only mode switch (buttons + panel visibility); schedule left untouched
+function uiMode(mode) {
+  pop.mode = mode;
+  document.querySelectorAll("#popModes .metric-btn").forEach((b) =>
+    b.classList.toggle("is-active", b.dataset.mode === mode));
+  document.getElementById("popSeedPanel").hidden = mode !== "random";
+  document.getElementById("popComposer").hidden = mode !== "custom";
+}
+
+function setMode(mode) {
+  const from = pop.mode;
+  uiMode(mode);
+  if (mode === "neutral") pop.schedule = [];
+  else if (mode === "random") pop.schedule = genSchedule(pop.seed);
+  // custom inherits the current schedule — tweaking a Surprise-me history is a feature
+  if (mode === "custom" && from === "neutral") pop.schedule = [];
+  applySchedule();
+}
+
+/* one editable row per scheduled event: [event] [year][month][duration] [✕] */
+function renderSchedule() {
+  const wrap = document.getElementById("popSchedule");
+  wrap.replaceChildren();
+  pop.schedule.forEach((s, idx) => {
+    const ev = window.ML_EVENTS[s.id];
+    const row = document.createElement("div");
+    row.className = "ps-row " + (ev.kind === "shock" ? "shock" : "stab");
+
+    const name = document.createElement("span");
+    name.className = "ps-name";
+    name.textContent = ev.icon + " " + ev.label;
+
+    const selYear = document.createElement("select");
+    selYear.setAttribute("aria-label", "Start year");
+    for (let y = 1; y <= 7; y++) {
+      const o = document.createElement("option");
+      o.value = String(y);
+      o.textContent = "Year " + y;
+      if (y === Math.floor(s.start / 12) + 1) o.selected = true;
+      selYear.appendChild(o);
+    }
+
+    const selMonth = document.createElement("select");
+    selMonth.setAttribute("aria-label", "Start month");
+    MONTH_ABBR.forEach((mn, mi) => {
+      const o = document.createElement("option");
+      o.value = String(mi);
+      o.textContent = mn;
+      if (mi === s.start % 12) o.selected = true;
+      selMonth.appendChild(o);
+    });
+
+    const selDur = document.createElement("select");
+    selDur.setAttribute("aria-label", "Duration in months");
+    const rest = MONTHS - s.start;
+    const std = [1, 3, 6, 12, 24];
+    const opts = std.includes(s.dur) || s.dur === rest ? std : [...std, s.dur].sort((a, b) => a - b);
+    for (const d of opts) {
+      const o = document.createElement("option");
+      o.value = String(d);
+      o.textContent = d + (d === 1 ? " month" : " months");
+      if (d === s.dur && s.dur !== rest) o.selected = true;
+      selDur.appendChild(o);
+    }
+    const oRest = document.createElement("option");
+    oRest.value = "rest";
+    oRest.textContent = "rest of run";
+    if (s.dur === rest) oRest.selected = true;
+    selDur.appendChild(oRest);
+
+    const onEdit = () => {
+      s.start = (Number(selYear.value) - 1) * 12 + Number(selMonth.value);
+      s.dur = selDur.value === "rest"
+        ? MONTHS - s.start
+        : Math.min(MONTHS - s.start, Number(selDur.value));
+      if (pop.mode === "random") uiMode("custom");   // an edited history is yours now
+      applySchedule();
+    };
+    selYear.addEventListener("change", onEdit);
+    selMonth.addEventListener("change", onEdit);
+    selDur.addEventListener("change", onEdit);
+
+    const del = document.createElement("button");
+    del.className = "ps-del";
+    del.textContent = "✕";
+    del.setAttribute("aria-label", "Remove " + ev.label);
+    del.addEventListener("click", () => {
+      pop.schedule.splice(idx, 1);
+      if (pop.mode === "random") uiMode("custom");
+      applySchedule();
+    });
+
+    row.append(name, selYear, selMonth, selDur, del);
+    wrap.appendChild(row);
+  });
+}
+
+/* red/green ticks over the scrubber marking each event's start month */
+function renderScrubMarks() {
+  const wrap = document.getElementById("popScrubMarks");
+  wrap.replaceChildren();
+  for (const s of pop.schedule) {
+    const ev = window.ML_EVENTS[s.id];
+    const tick = document.createElement("i");
+    tick.className = ev.kind === "shock" ? "shock" : "stab";
+    tick.style.left = (s.start / (MONTHS - 1)) * 100 + "%";
+    tick.title = ev.label;
+    wrap.appendChild(tick);
+  }
+}
+
+function buildCityControls() {
+  // event chips = "drop this event at the month I'm scrubbed to"
   for (const [id, ev] of Object.entries(window.ML_EVENTS)) {
     const wrap = document.getElementById(ev.kind === "shock" ? "popShockBtns" : "popStabBtns");
     const b = document.createElement("button");
     b.className = "sim-btn " + (ev.kind === "shock" ? "shock" : "stab");
-    b.dataset.id = id;   // lets the guided tour find a specific chip (matches simulator.js)
+    b.dataset.id = id;
     b.textContent = ev.icon + " " + ev.label;
-    b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", () => {
-      if (pop.active.has(id)) pop.active.delete(id); else pop.active.add(id);
-      b.classList.toggle("is-on", pop.active.has(id));
-      b.setAttribute("aria-pressed", String(pop.active.has(id)));
-      pop.bannerShownFor = -1;
-      simulateAll();
-      paintFrame();
-      updateReadout(Math.floor(pop.tf));
+      const start = Math.min(MONTHS - 2, Math.floor(pop.tf));
+      pop.schedule.push({ id, start, dur: defaultDur(id, start) });
+      applySchedule();
     });
     wrap.appendChild(b);
   }
-  const slider = document.getElementById("popWhenSlider");
-  slider.addEventListener("input", () => {
-    pop.when = +slider.value;
-    document.getElementById("popWhenLabel").textContent = slider.value;
-    pop.bannerShownFor = -1;
-    simulateAll();
-    paintFrame();
-    updateReadout(Math.floor(pop.tf));
+
+  document.querySelectorAll("#popModes .metric-btn").forEach((b) =>
+    b.addEventListener("click", () => setMode(b.dataset.mode)));
+
+  const seedInput = document.getElementById("popSeed");
+  seedInput.value = String(pop.seed);
+  seedInput.addEventListener("change", () => {
+    pop.seed = Math.max(0, Math.floor(Number(seedInput.value) || 0));
+    if (pop.mode === "random") { pop.schedule = genSchedule(pop.seed); applySchedule(); }
   });
+  document.getElementById("popReroll").addEventListener("click", () => {
+    pop.seed = 1000 + Math.floor(Math.random() * 99000);
+    seedInput.value = String(pop.seed);
+    pop.schedule = genSchedule(pop.seed);
+    applySchedule();
+  });
+
   document.getElementById("popReset").addEventListener("click", () => {
-    pop.active.clear();
-    document.querySelectorAll("#popShockBtns .sim-btn, #popStabBtns .sim-btn")
-      .forEach((b) => { b.classList.remove("is-on"); b.setAttribute("aria-pressed", "false"); });
-    document.getElementById("popEnd").hidden = true;
-    pop.lastYear = 0; pop.bannerShownFor = -1;
-    simulateAll();
+    setMode("neutral");
     setMonth(0);
     updateReadout(0);
   });
@@ -630,6 +834,18 @@ function buildEventChips() {
     });
     speeds.appendChild(b);
   }
+
+  // small public surface for the guided tour (and future deep-links)
+  window.MLCity = {
+    reset() { setMode("neutral"); setMonth(0); updateReadout(0); },
+    setSchedule(arr) {
+      uiMode("custom");
+      pop.schedule = arr.map((s) => ({ id: s.id, start: s.start, dur: s.dur }));
+      applySchedule();
+    },
+    setMode,
+    play,
+  };
 }
 
 function buildLegend() {
@@ -680,7 +896,7 @@ async function boot() {
     simulateAll();
     layoutAgents();
     initThree(map);
-    buildEventChips();
+    buildCityControls();
     buildLayerChips();
     buildLegend();
     setMonth(0);
