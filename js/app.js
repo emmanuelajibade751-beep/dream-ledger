@@ -499,6 +499,7 @@ function setMetric(metric) {
   if (window.initHeatmap) window.initHeatmap();
   if (window.initArtifacts) window.initArtifacts();
   if (window.initSimulator) window.initSimulator();
+  if (window.initTour) window.initTour();       // tour drives the controls built above
   window.state = state;                                  // population module reads this
   if (window.initPopulation) window.initPopulation();    // module loaded first
 })();

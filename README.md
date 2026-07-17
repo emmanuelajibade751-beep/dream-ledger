@@ -37,7 +37,7 @@ git push app deploy:gh-pages --force
 ## Structure
 ```
 index.html · serve.py · css/style.css
-js/   app.js (climb + boot) · simulator.js (shock engine) · heatmap.js · artifacts.js · population.js (3-D city)
+js/   app.js (climb + boot) · simulator.js (shock engine) · heatmap.js · artifacts.js · population.js (3-D city) · tour.js (guided tour)
 data/ <persona>.json · index.json · lagos_map.json          (GENERATED — see build/)
 build/ export_data.py · fetch_lagos_map.py                  (dev-only data pipeline)
 ```
@@ -52,6 +52,7 @@ build/ export_data.py · fetch_lagos_map.py                  (dev-only data pipe
 | 4 | Population of 1,000 — three.js city (`population.js`) | ✅ |
 | 4b | Cinematic ~50s timelapse (speeds, chyron, banner, ripple, end card) | ✅ |
 | 4c | Real OSM Lagos map with toggleable layers (`build/fetch_lagos_map.py`) | ✅ |
+| — | Guided tour / story mode — 6-stop walkthrough (`js/tour.js`) | ✅ |
 | 5 | The spatial city — geography as mechanics (persistent buildings, local shocks, community loans) | ⬜ next |
 
 Full detail for every phase, plus the "what's next" proposals, is in [`HANDOVER.md`](HANDOVER.md) §6–7.

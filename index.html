@@ -22,6 +22,7 @@
       <strong>Click a person to enter their life;</strong> hover the dots to see the moment a
       milestone landed — then scroll down and shock the city.
     </p>
+    <button class="tour-start" id="tourStart">▶ Take the tour</button>
   </div>
 </header>
 
@@ -29,7 +30,7 @@
   <!-- Persona cards double as the legend and the focus control -->
   <section class="cast" id="cast" aria-label="The five personas"></section>
 
-  <section class="stage">
+  <section class="stage" id="sec-climb">
     <div class="controls" role="toolbar" aria-label="Chart controls">
       <div class="metric-toggle" id="metricToggle">
         <button class="metric-btn is-active" data-metric="dream_cum">The dream (₦ built)</button>
@@ -72,7 +73,7 @@
   </section>
 
   <!-- Phase 2a — the life in weeks -->
-  <section class="stage">
+  <section class="stage" id="sec-weeks">
     <div class="chart-card">
       <div class="chart-head">
         <h2>The life in weeks — every square is one week lived</h2>
@@ -102,7 +103,7 @@
   </section>
 
   <!-- Phase 3 — the simulator -->
-  <section class="stage">
+  <section class="stage" id="sec-sim">
     <div class="chart-card sim-card">
       <div class="chart-head">
         <h2>The simulator — shock the city, steady the city</h2>
@@ -152,7 +153,7 @@
   </section>
 
   <!-- Phase 4 — the population -->
-  <section class="stage">
+  <section class="stage" id="sec-city">
     <div class="chart-card">
       <div class="chart-head">
         <h2>Lagos, in timelapse — 1,000 dreams at once</h2>
@@ -218,7 +219,7 @@
   </section>
 
   <!-- Phase 2b — the Menzel artifact boards -->
-  <section class="stage">
+  <section class="stage" id="sec-objects">
     <div class="chart-card">
       <div class="chart-head">
         <h2>What the money became — the dream as objects</h2>
@@ -240,9 +241,10 @@
 </main>
 
 <footer class="site-foot">
-  <p>Money Lens · LLL Laboratory — Subtractive City, Lagos. Data: five synthetic dream ledgers
-  (engines/outputs). Interactive layer, Phase 1. Coming next: milestone artifact boards, shocks
-  &amp; stabilizers (subsidy removal ↔ subsidy), a population of 1,000 dreams.</p>
+  <p>Money Lens · LLL Laboratory — Subtractive City, Lagos. Data: seven synthetic dream ledgers
+  (engines/outputs). Interactive layer: the climb, the life in weeks, the shock/stabilizer
+  simulator, a 1,000-household Lagos timelapse, and the artifact boards. Map data
+  © OpenStreetMap contributors.</p>
 </footer>
 
 <div class="float-tip" id="floatTip" hidden></div>
@@ -251,6 +253,7 @@
 <script src="js/heatmap.js"></script>
 <script src="js/artifacts.js"></script>
 <script src="js/simulator.js"></script>
+<script src="js/tour.js"></script>
 <script type="importmap">
 {
   "imports": {

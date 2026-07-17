@@ -578,6 +578,7 @@ function buildEventChips() {
     const wrap = document.getElementById(ev.kind === "shock" ? "popShockBtns" : "popStabBtns");
     const b = document.createElement("button");
     b.className = "sim-btn " + (ev.kind === "shock" ? "shock" : "stab");
+    b.dataset.id = id;   // lets the guided tour find a specific chip (matches simulator.js)
     b.textContent = ev.icon + " " + ev.label;
     b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", () => {

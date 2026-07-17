@@ -15,7 +15,8 @@ only if you need the deeper research context — `../HANDOVER.md` (project) and
 - **Live:** https://emmanuelajibade751-beep.github.io/dream-ledger/
 - **Stack:** vanilla ES modules, **D3 v7** for 2-D charts, **three.js r160** for the 3-D city.
   No build step, no framework. Static files served as-is.
-- **Status:** Phases 0–4 DONE (+4b timelapse, +4c real map). Phase 5 (spatial simulation) is next.
+- **Status:** Phases 0–4 DONE (+4b timelapse, +4c real map, + guided tour). Phase 5 (spatial
+  simulation) is next.
 
 ---
 
@@ -85,6 +86,7 @@ git push app deploy:gh-pages --force
 │   ├── simulator.js     ← Phase 3 seven-life simulator + THE SHOCK ENGINE (window.ML_EVENTS)
 │   ├── heatmap.js       ← Phase 2 life-in-weeks heatmap
 │   ├── artifacts.js     ← Phase 2 Menzel artifact boards (treemap)
+│   ├── tour.js          ← guided tour / story mode (6 stops; drives the real controls)
 │   └── population.js    ← Phase 4 three.js city + timelapse + real map (ES module)
 ├── data/                ← GENERATED — do not hand-edit
 │   ├── index.json       ← persona list (key, name, color) for card order
@@ -230,6 +232,24 @@ water always on). Attribution © OpenStreetMap contributors (ODbL) shown in the 
 Re-fetch: `py -3 build/fetch_lagos_map.py` (Overpass rate-limits — the script retries across two
 endpoints; a 429 mid-run is usually harmless as it falls back).
 
+### Guided tour / story mode ✅ (`js/tour.js`, 2026-07-17)
+Six stops in PAGE order (which differs from phase numbering): cast → climb (focuses Kids Abroad,
+the rocket) → life-in-weeks (the Control's grey wall vs AMA's red wall) → simulator (toggles
+currency collapse ON — the two-sided finding) → city (resets, arms the same shock, presses play;
+the ripple lands at year 3) → artifact boards (closing). Started via the masthead's
+"▶ Take the tour" button. Design decisions worth knowing:
+- The tour drives the app's REAL controls (persona-card clicks, `.sim-btn[data-id]` chips,
+  `#popPlay`) so it exercises normal code paths; ending it anywhere leaves an explorable page.
+- Same boot-race pattern as population.js: self-inits if `window.state` is already populated,
+  else waits for `boot()` to call `window.initTour()` (idempotent).
+- **Do not focus the Next button on step changes** — spacebar is a scroll key, and a focused
+  button turns every space-scroll into an accidental step-skip (bug found in verification).
+  Arrow keys navigate via a document-level handler; Esc ends the tour.
+- Sections carry ids now (`sec-climb`, `sec-weeks`, `sec-sim`, `sec-city`, `sec-objects`) —
+  also the groundwork for deep-linking.
+- `population.js` chips carry `data-id` (added for the tour, matching simulator.js buttons).
+- Reduced-motion: no smooth scroll, no autoplay at the city stop (copy invites pressing Play).
+
 ---
 
 ## 7. What's next (FUTURE)
@@ -251,11 +271,8 @@ differently *because* it's in Agege. Make geography matter:
   persona-generic so Phase 5 rules layer on top rather than replace it.
 
 ### Smaller, high-value items (can slot in any time)
-- **Guided tour / story mode** — a "take the tour" button walking a first-timer (i.e. Lex) through
-  climb → Kids-Abroad rocket → Control's grey wall → press a shock → the city timelapse. The app is
-  dense now; a 6-stop tour makes it self-presenting.
 - **Deep-link / shareable state** — encode active shocks + hit-year + focus in the URL hash so a
-  specific scenario can be sent as a link.
+  specific scenario can be sent as a link. (The tour added section ids — half the groundwork.)
 - **Mobile pass** — the 3-D city and control rows need a narrow-screen once-over.
 - **Follow-the-Billionaire (`../02_...`) and the other stubs** — separate chapters, not yet apps.
 
